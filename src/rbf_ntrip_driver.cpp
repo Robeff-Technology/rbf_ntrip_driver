@@ -29,13 +29,13 @@ namespace rbf_ntrip_driver {
 
         // Create the RTCM publisher if enabled
         if (config_.rtcm_publisher.publish_rtcm) {
-            pub_rtcm_ = this->create_publisher<mavros_msgs::msg::RTCM>(config_.rtcm_publisher.topic_name, 10);
+            pub_rtcm_ = this->create_publisher<mavros_msgs::msg::RTCM>(config_.rtcm_publisher.topic_name, rclcpp::SensorDataQoS());
         }
         // Subscribe to NAV-SAT-FIX if it's used initially, Otherwise, try to establish the NTRIP connection
         if(config_.ntrip.use_nav_sat_fix_init){
             RCLCPP_INFO(this->get_logger(), "Waiting for NavSatFix message to initialize NTRIP client...");
             sub_nav_sat_fix_ = this->create_subscription<sensor_msgs::msg::NavSatFix>(
-                config_.ntrip.nav_sat_fix_topic_name, 10, std::bind(&NtripDriver::nav_sat_fix_callback, this, std::placeholders::_1));
+            config_.ntrip.nav_sat_fix_topic_name, rclcpp::SensorDataQoS(), std::bind(&NtripDriver::nav_sat_fix_callback, this, std::placeholders::_1));
         }
         else{
             try_to_ntrip_connect();
@@ -101,9 +101,11 @@ namespace rbf_ntrip_driver {
         while (try_count < max_attempts && rclcpp::ok()) {
             if (run_ntrip()) {
                 ntrip_time_ = this->now();
+                RCLCPP_INFO(this->get_logger(), "Connected to the NTRIP Client");
                 return;
             }
             // Retry after a delay if failed
+            RCLCPP_INFO(this->get_logger(), "Not Connected to the NTRIP Client");
             try_count++;
             rclcpp::sleep_for(std::chrono::seconds(1));
         }

@@ -21,7 +21,12 @@ The NtripDriver ROS 2 node facilitates communication with an NTRIP (Networked Tr
     git clone https://github.com/Robeff-Technology/rbf_ntrip_driver.git
     ```
 
-2. Build the Humble workspace:
+2. Install dependencies using ```rosdep```:
+   ```bash
+   cd rbf_ntrip_driver
+   rosdep install --from-paths src --ignore-src -r -y
+   ```
+3. Build the Humble workspace:
 
     ```bash
     colcon build
