@@ -8,6 +8,7 @@ namespace rbf_ntrip_driver {
         
         // Configure and start the NTRIP client
         ntrip_client_ptr_ = std::make_shared<libntrip::NtripClient>(config_.ntrip.host, config_.ntrip.port, config_.ntrip.username, config_.ntrip.password, config_.ntrip.mountpoint);
+        ntrip_client_ptr_->set_report_interval(static_cast<int>(config_.ntrip.gpgga_interval_sec));
         diagnostic_updater_ = std::make_shared<diagnostic_updater::Updater>(this);
         diagnostic_updater_->setHardwareID("NTRIP DRIVER");
         diagnostic_updater_->add("NTRIP Client Status", this, &NtripDriver::diagnostic_callback);
@@ -27,6 +28,15 @@ namespace rbf_ntrip_driver {
             }
         }
 
+        if(config_.ntrip.use_gpgga_for_ntrip){
+            RCLCPP_INFO(this->get_logger(), "Subscribing to GPGGA sentences for NTRIP client...");
+            sub_gpgga_ = this->create_subscription<nmea_msgs::msg::Sentence>(
+                config_.ntrip.gpgga_topic_name, rclcpp::SensorDataQoS(),
+                [this](const nmea_msgs::msg::Sentence::SharedPtr msg){
+                    ntrip_client_ptr_->set_gga_buffer(msg->sentence);
+                });
+        }
+
         // Create the RTCM publisher if enabled
         if (config_.rtcm_publisher.publish_rtcm) {
             pub_rtcm_ = this->create_publisher<mavros_msgs::msg::RTCM>(config_.rtcm_publisher.topic_name, rclcpp::SensorDataQoS());
@@ -40,6 +50,8 @@ namespace rbf_ntrip_driver {
         else{
             try_to_ntrip_connect();
         }
+
+
     }
 
     void NtripDriver::load_parameters()
@@ -53,6 +65,9 @@ namespace rbf_ntrip_driver {
         config_.ntrip.nav_sat_fix_topic_name = declare_parameter("ntrip.nav_sat_fix_topic_name", "/fix");
         config_.ntrip.init_lat_position = declare_parameter("ntrip.init_ntrip_location_lat", 0.0);
         config_.ntrip.init_lon_position = declare_parameter("ntrip.init_ntrip_location_lon", 0.0);
+        config_.ntrip.use_gpgga_for_ntrip = declare_parameter("ntrip.use_gpgga_for_ntrip", false);
+        config_.ntrip.gpgga_topic_name = declare_parameter("ntrip.gpgga_topic_name", "/gpgga");
+        config_.ntrip.gpgga_interval_sec = declare_parameter("ntrip.gpgga_interval_sec", 5.0);
 
         config_.serial_port.port = declare_parameter("serial_port.name", "/dev/ttyUSB0");
         config_.serial_port.baudrate = declare_parameter("serial_port.baud_rate", 9600);
@@ -72,6 +87,10 @@ namespace rbf_ntrip_driver {
         RCLCPP_INFO(this->get_logger(),"nav_sat_fix_topic_name: %s", config_.ntrip.nav_sat_fix_topic_name.c_str());
         RCLCPP_INFO(this->get_logger(),"init_lat_position: %f", config_.ntrip.init_lat_position);
         RCLCPP_INFO(this->get_logger(),"init_lon_position: %f", config_.ntrip.init_lon_position);
+        RCLCPP_INFO(this->get_logger(),"use_gpgga_for_ntrip: %d", config_.ntrip.use_gpgga_for_ntrip);
+        RCLCPP_INFO(this->get_logger(),"gpgga_topic_name: %s", config_.ntrip.gpgga_topic_name.c_str());
+        RCLCPP_INFO(this->get_logger(),"gpgga_interval_sec: %f", config_.ntrip.gpgga_interval_sec);
+
         RCLCPP_INFO(this->get_logger(),"---------SERIAL PORT CONFIGURATION--------");
         RCLCPP_INFO(this->get_logger(),"port: %s", config_.serial_port.port.c_str());
         RCLCPP_INFO(this->get_logger(),"baudrate: %d", config_.serial_port.baudrate);
@@ -95,7 +114,7 @@ namespace rbf_ntrip_driver {
 
     // Try to establish the NTRIP connection
     void NtripDriver::try_to_ntrip_connect(){
-        constexpr int max_attempts = 120;
+        constexpr int max_attempts = 10;
         int try_count = 0;
         // Try for a certain number of attempts or until successful
         while (try_count < max_attempts && rclcpp::ok()) {

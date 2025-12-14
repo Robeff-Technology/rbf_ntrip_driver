@@ -10,6 +10,9 @@
       nav_sat_fix_topic_name: "/fix"
       init_ntrip_location_lat: 0.0000000000
       init_ntrip_location_lon: 0.0000000000
+      use_gpgga_for_ntrip: true
+      gpgga_topic_name: "/gpgga"
+      gpgga_interval_sec: 5.0
 
     serial_port:
       publish_port_rtcm: false

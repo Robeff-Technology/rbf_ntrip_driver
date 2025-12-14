@@ -12,6 +12,7 @@ find_package(rclcpp_components REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(mavros_msgs REQUIRED)
 find_package(diagnostic_updater REQUIRED)
+find_package(nmea_msgs REQUIRED)
 
 include_directories(include)
 
@@ -29,6 +30,7 @@ ament_target_dependencies(rbf_ntrip_driver_component
   sensor_msgs
   mavros_msgs
   diagnostic_updater
+  nmea_msgs
 )
 
 rclcpp_components_register_node(

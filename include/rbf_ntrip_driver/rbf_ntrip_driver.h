@@ -7,6 +7,7 @@
 #include <memory>
 
 #include <mavros_msgs/msg/rtcm.hpp>
+#include <nmea_msgs/msg/sentence.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 #include <diagnostic_updater/diagnostic_updater.hpp>
 
@@ -35,6 +36,9 @@ public:
             std::string nav_sat_fix_topic_name;
             double init_lat_position;
             double init_lon_position;
+            bool use_gpgga_for_ntrip;
+            std::string gpgga_topic_name;
+            double gpgga_interval_sec;
         };
         struct SerialPort{
             std::string port;
@@ -70,6 +74,7 @@ private:
 
     /*SUBSCRIBERS*/
     rclcpp::Subscription<sensor_msgs::msg::NavSatFix>::SharedPtr sub_nav_sat_fix_;
+    rclcpp::Subscription<nmea_msgs::msg::Sentence>::SharedPtr sub_gpgga_;
 
     /*CALLBACKS*/
     void diagnostic_callback(diagnostic_updater::DiagnosticStatusWrapper& stat);
