@@ -74,6 +74,17 @@ You can customize the behavior of the NtripDriver node by modifying the paramete
 9. **`init_ntrip_location_lon`**: 
    - The initial longitude position for the NTRIP client.
 
+10. **`use_gpgga_for_ntrip`**: 
+      - Enables the use of NMEA GPGGA sentences to initialize and periodically update the NTRIP client’s reference position.
+
+11. **`gpgga_topic_name`**: 
+      - Specifies the ROS2 topic name from which NMEA GPGGA sentences are received.
+
+12. **`gpgga_interval_sec`**: 
+      - Defines the minimum interval (in seconds) between consecutive GPGGA messages sent to the NTRIP client.
+
+
+
 ### Serial Port Parameters:
 
 1. **`publish_port_rtcm`**: 
@@ -103,5 +114,6 @@ These parameters allow you to configure various aspects of the NtripDriver node'
     - `/rtcm` (mavros_msgs/RTCM): Published if `publish_rtcm` parameter is set to `true`.
 - **Subscribed Topics**:
     - `/fix` (sensor_msgs/NavSatFix): Subscribed if `use_nav_sat_fix_init` parameter is set to `true`.
+    - `/gpgga` (nmea_msgs/): Subscribed gpgga messages if  `use_gpgga_for_ntrip` parameter is set to `true`.
 
 
