@@ -1,7 +1,7 @@
 /**:
   ros__parameters:
     ntrip:
-      host: "212.156.70.42"
+      host: "ntrip.example.com"
       user_name: "-----------"
       password: "---------"
       mount_point: "VRSRTCM31"
