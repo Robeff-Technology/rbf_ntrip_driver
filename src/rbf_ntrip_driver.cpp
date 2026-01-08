@@ -162,6 +162,9 @@ void NtripDriver::load_parameters()
   config_.ntrip.use_gpgga_for_ntrip = declare_parameter("ntrip.use_gpgga_for_ntrip", false);
   config_.ntrip.gpgga_topic_name = declare_parameter("ntrip.gpgga_topic_name", "/gpgga");
   config_.ntrip.gpgga_interval_sec = declare_parameter("ntrip.gpgga_interval_sec", 5.0);
+  config_.ntrip.shutdown_if_not_connected = declare_parameter("shutdown_if_not_connected", false);
+  config_.ntrip.shutdown_length_sec = declare_parameter("shutdown_length_sec", 10.0);
+    
 
   config_.serial_port.port = declare_parameter("serial_port.name", "/dev/ttyUSB0");
   config_.serial_port.baudrate = declare_parameter("serial_port.baud_rate", 9600);
@@ -185,6 +188,8 @@ void NtripDriver::load_parameters()
   RCLCPP_INFO(this->get_logger(), "use_gpgga_for_ntrip: %d", config_.ntrip.use_gpgga_for_ntrip);
   RCLCPP_INFO(this->get_logger(), "gpgga_topic_name: %s", config_.ntrip.gpgga_topic_name.c_str());
   RCLCPP_INFO(this->get_logger(), "gpgga_interval_sec: %f", config_.ntrip.gpgga_interval_sec);
+  RCLCPP_INFO(this->get_logger(), "shutdown_if_not_connected: %d", config_.ntrip.shutdown_if_not_connected);
+  RCLCPP_INFO(this->get_logger(), "shutdown_length_sec: %d", config_.ntrip.shutdown_length_sec);
 
   RCLCPP_INFO(this->get_logger(), "---------SERIAL PORT CONFIGURATION--------");
   RCLCPP_INFO(this->get_logger(), "port: %s", config_.serial_port.port.c_str());
@@ -211,10 +216,22 @@ bool NtripDriver::run_ntrip()
 // Try to establish the NTRIP connection
 void NtripDriver::try_to_ntrip_connect()
 {
-  constexpr int max_attempts = 10;
   int try_count = 0;
+
+  // if shutdown_if_not_connected argument is given false, the while
+  // loop will last forever. if argument is determined as true,
+  // shutdown_arg will be specified based on whether try_count is less
+  // then shutdown_length_sec or not.
+
+  bool shutdown_arg = false;
+  if (!config_.ntrip.shutdown_if_not_connected)
+  {
+    shutdown_arg = try_count < config_.ntrip.shutdown_length_sec;
+    // is it possible to change parameters in while loop? if yes,
+    // create const int max_attempts to compare with try_count
+  }
   // Try for a certain number of attempts or until successful
-  while (try_count < max_attempts && rclcpp::ok()) {
+  while (!shutdown_arg && rclcpp::ok()) {
     if (run_ntrip()) {
       ntrip_time_ = this->now();
       RCLCPP_INFO(this->get_logger(), "Connected to the NTRIP Client");
@@ -226,7 +243,10 @@ void NtripDriver::try_to_ntrip_connect()
     rclcpp::sleep_for(std::chrono::seconds(1));
   }
   // Shutdown if maximum attempts reached or failed to initialize NTRIP client
-  rclcpp::shutdown();
+  if(config_.ntrip.shutdown_if_not_connected)
+  {
+    rclcpp::shutdown();
+  }
 }
 
 // Timer callback function
@@ -248,6 +268,7 @@ void NtripDriver::diagnostic_callback(diagnostic_updater::DiagnosticStatusWrappe
           std::bind(&NtripDriver::nav_sat_fix_callback, this, std::placeholders::_1));
       }
     } else {
+      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "Trying to connect to NTRIP");
       try_to_ntrip_connect();
     }
   } else {

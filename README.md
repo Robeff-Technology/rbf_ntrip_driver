@@ -83,6 +83,11 @@ You can customize the behavior of the NtripDriver node by modifying the paramete
 12. **`gpgga_interval_sec`**: 
       - Defines the minimum interval (in seconds) between consecutive GPGGA messages sent to the NTRIP client.
 
+13. **`shutdown_if_not_connected`**: 
+      - Determines if the NTRIP node will be shutdown after not being able to establish a connection for a specified time length.
+
+14. **`shutdown_if_not_connected`**: 
+      - The time length needed to shutdown the NTRIP driver node after not being connected.
 
 
 ### Serial Port Parameters:
