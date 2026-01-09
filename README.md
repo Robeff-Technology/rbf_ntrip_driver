@@ -86,7 +86,7 @@ You can customize the behavior of the NtripDriver node by modifying the paramete
 13. **`shutdown_if_not_connected`**: 
       - Determines if the NTRIP node will be shutdown after not being able to establish a connection for a specified time length.
 
-14. **`shutdown_if_not_connected`**: 
+14. **`shutdown_length_sec`**: 
       - The time length needed to shutdown the NTRIP driver node after not being connected.
 
 
