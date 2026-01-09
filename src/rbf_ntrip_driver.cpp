@@ -162,10 +162,9 @@ void NtripDriver::load_parameters()
   config_.ntrip.use_gpgga_for_ntrip = declare_parameter("ntrip.use_gpgga_for_ntrip", false);
   config_.ntrip.gpgga_topic_name = declare_parameter("ntrip.gpgga_topic_name", "/gpgga");
   config_.ntrip.gpgga_interval_sec = declare_parameter("ntrip.gpgga_interval_sec", 5.0);
-  config_.ntrip.shutdown_if_not_connected = declare_parameter("shutdown_if_not_connected", false);
-  config_.ntrip.shutdown_length_sec = declare_parameter("shutdown_length_sec", 10.0);
-    
-
+  config_.ntrip.shutdown_if_not_connected = declare_parameter("ntrip.shutdown_if_not_connected", false);
+  config_.ntrip.shutdown_length_sec = declare_parameter("ntrip.shutdown_length_sec", 10);
+  
   config_.serial_port.port = declare_parameter("serial_port.name", "/dev/ttyUSB0");
   config_.serial_port.baudrate = declare_parameter("serial_port.baud_rate", 9600);
   config_.serial_port.publish_port_rtcm = declare_parameter("serial_port.publish_port_rtcm", false);
@@ -216,34 +215,30 @@ bool NtripDriver::run_ntrip()
 // Try to establish the NTRIP connection
 void NtripDriver::try_to_ntrip_connect()
 {
+  int max_attempts = config_.ntrip.shutdown_length_sec;
   int try_count = 0;
+  bool loopArg = true;
 
-  // if shutdown_if_not_connected argument is given false, the while
-  // loop will last forever. if argument is determined as true,
-  // shutdown_arg will be specified based on whether try_count is less
-  // then shutdown_length_sec or not.
+  RCLCPP_INFO(this->get_logger(), "Connection was cut.");
+  RCLCPP_INFO(this->get_logger(), "Trying to connect NTRIP client...");
 
-  bool shutdown_arg = false;
-  if (!config_.ntrip.shutdown_if_not_connected)
-  {
-    shutdown_arg = try_count < config_.ntrip.shutdown_length_sec;
-    // is it possible to change parameters in while loop? if yes,
-    // create const int max_attempts to compare with try_count
-  }
-  // Try for a certain number of attempts or until successful
-  while (!shutdown_arg && rclcpp::ok()) {
+  while (loopArg && rclcpp::ok()) {
+    if (config_.ntrip.shutdown_if_not_connected)
+    {
+      loopArg = try_count < max_attempts;
+    }
     if (run_ntrip()) {
       ntrip_time_ = this->now();
       RCLCPP_INFO(this->get_logger(), "Connected to the NTRIP Client");
       return;
     }
     // Retry after a delay if failed
-    RCLCPP_INFO(this->get_logger(), "Not Connected to the NTRIP Client");
+    RCLCPP_INFO(this->get_logger(), "Not Connected to the NTRIP Client, try %d", try_count + 1);
     try_count++;
     rclcpp::sleep_for(std::chrono::seconds(1));
   }
   // Shutdown if maximum attempts reached or failed to initialize NTRIP client
-  if(config_.ntrip.shutdown_if_not_connected)
+  if (config_.ntrip.shutdown_if_not_connected)
   {
     rclcpp::shutdown();
   }
@@ -269,6 +264,7 @@ void NtripDriver::diagnostic_callback(diagnostic_updater::DiagnosticStatusWrappe
       }
     } else {
       stat.summary(diagnostic_msgs::msg::DiagnosticStatus::OK, "Trying to connect to NTRIP");
+      stat.summary(diagnostic_msgs::msg::DiagnosticStatus::ERROR, "Trying to connect NTRIP client");
       try_to_ntrip_connect();
     }
   } else {
