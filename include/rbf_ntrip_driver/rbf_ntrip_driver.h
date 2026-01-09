@@ -46,6 +46,8 @@ public:
       bool use_gpgga_for_ntrip;
       std::string gpgga_topic_name;
       double gpgga_interval_sec;
+      bool shutdown_if_not_connected;
+      int shutdown_length_sec;
     };
     struct SerialPort
     {

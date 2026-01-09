@@ -13,13 +13,15 @@
       use_gpgga_for_ntrip: true
       gpgga_topic_name: "/gpgga"
       gpgga_interval_sec: 5.0
+      shutdown_if_not_connected: false
+      shutdown_length_sec: 10
 
     serial_port:
       publish_port_rtcm: false
-      name: "/dev/pts/3"
+      name: "/dev/pts/7"
       baud_rate: 460800
 
     rtcm_publisher:
-      publish_rtcm: false
+      publish_rtcm: true
       rtcm_topic: "/rtcm"
       rtcm_frame_id: "rtcm"

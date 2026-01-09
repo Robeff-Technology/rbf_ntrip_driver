@@ -156,6 +156,34 @@ void SerialPort::write(const char * data, int length)
   }
 }
 
+
+// ChatGPT notes about write function:
+
+// strlen stops at the first '\0'
+// RTCM frames regularly contain 0x00
+// Result: truncated frames → receiver sees garbage
+// Warning: The length must come from the network read, not from string logic.
+
+// Suggestion:
+// void SerialPort::write(const char* data, int length)
+// {
+//   int total = 0;
+
+//   while (total < length) {
+//     ssize_t written = ::write(fd_, data + total, length - total);
+
+//     if (written < 0) {
+//       if (errno == EINTR) {
+//         continue;  // retry
+//       }
+//       throw SerialPortException("error writing to serial port");
+//     }
+
+//     total += written;
+//   }
+// }
+
+
 void SerialPort::read(char * buffer, int buffer_size)
 {
   int bytes_available;
