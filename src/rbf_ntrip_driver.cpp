@@ -259,7 +259,7 @@ void NtripDriver::diagnostic_callback(diagnostic_updater::DiagnosticStatusWrappe
       if (sub_nav_sat_fix_ == nullptr) {
         nav_sat_fix_received_ = false;
         sub_nav_sat_fix_ = this->create_subscription<sensor_msgs::msg::NavSatFix>(
-          config_.ntrip.nav_sat_fix_topic_name, 10,
+          config_.ntrip.nav_sat_fix_topic_name, rclcpp::SensorDataQoS(),
           std::bind(&NtripDriver::nav_sat_fix_callback, this, std::placeholders::_1));
       }
     } else {
