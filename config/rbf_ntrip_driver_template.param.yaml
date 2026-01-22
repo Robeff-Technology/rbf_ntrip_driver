@@ -1,9 +1,9 @@
 /**:
   ros__parameters:
     ntrip:
-      host: "82.222.52.131"
-      user_name: "leodtek1"
-      password: "xuo4fUXo"
+      host: "ntrip.example.com"
+      user_name: "-----------"
+      password: "---------"
       mount_point: "VRSRTCM31"
       port: 2101
       use_nav_sat_fix_init: false
