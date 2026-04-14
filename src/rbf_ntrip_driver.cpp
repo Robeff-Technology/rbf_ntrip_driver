@@ -49,7 +49,7 @@ NtripDriver::NtripDriver(const rclcpp::NodeOptions & options) : Node("rbf_ntrip_
   // Create the RTCM publisher if enabled
   if (config_.rtcm_publisher.publish_rtcm) {
     pub_rtcm_ = this->create_publisher<mavros_msgs::msg::RTCM>(
-      config_.rtcm_publisher.topic_name, rclcpp::SensorDataQoS());
+      config_.rtcm_publisher.topic_name, rclcpp::QoS{10});
   }
   // Subscribe to NAV-SAT-FIX if it's used initially, Otherwise, try to establish the NTRIP
   // connection
