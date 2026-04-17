@@ -48,7 +48,7 @@ NtripDriver::NtripDriver(const rclcpp::NodeOptions & options) : Node("rbf_ntrip_
 
   // Create the RTCM publisher if enabled
   if (config_.rtcm_publisher.publish_rtcm) {
-    pub_rtcm_ = this->create_publisher<mavros_msgs::msg::RTCM>(
+    pub_rtcm_ = this->create_publisher<rtcm_msgs::msg::Message>(
       config_.rtcm_publisher.topic_name, rclcpp::QoS{10});
   }
   // Subscribe to NAV-SAT-FIX if it's used initially, Otherwise, try to establish the NTRIP
@@ -282,10 +282,8 @@ void NtripDriver::diagnostic_callback(diagnostic_updater::DiagnosticStatusWrappe
 void NtripDriver::ntrip_client_callback(char const * _buffer, int _size)
 {
   ntrip_time_ = this->now();
-  auto rtcm_msg = mavros_msgs::msg::RTCM();
-  rtcm_msg.header.stamp = this->now();
-  rtcm_msg.header.frame_id = config_.rtcm_publisher.frame_id;
-  rtcm_msg.data = std::vector<uint8_t>(_buffer, _buffer + _size);
+  auto rtcm_msg = rtcm_msgs::msg::Message();
+  rtcm_msg.message = std::vector<uint8_t>(_buffer, _buffer + _size);
   if (config_.rtcm_publisher.publish_rtcm) {
     pub_rtcm_->publish(rtcm_msg);
   }

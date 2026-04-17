@@ -4,8 +4,8 @@
 #include <diagnostic_updater/diagnostic_updater.hpp>
 #include <rclcpp/rclcpp.hpp>
 
-#include <mavros_msgs/msg/rtcm.hpp>
 #include <nmea_msgs/msg/sentence.hpp>
+#include <rtcm_msgs/msg/message.hpp>
 #include <sensor_msgs/msg/nav_sat_fix.hpp>
 
 #include <ntrip/ntrip_client.h>
@@ -80,7 +80,7 @@ private:
   void try_to_ntrip_connect();
 
   /*PUBLISHERS*/
-  rclcpp::Publisher<mavros_msgs::msg::RTCM>::SharedPtr pub_rtcm_;
+  rclcpp::Publisher<rtcm_msgs::msg::Message>::SharedPtr pub_rtcm_;
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticStatus>::SharedPtr pub_diagnostic_;
 
   /*SUBSCRIBERS*/

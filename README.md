@@ -116,7 +116,7 @@ These parameters allow you to configure various aspects of the NtripDriver node'
 
 ## Node Details
 - **Published Topics**:
-    - `/rtcm` (mavros_msgs/RTCM): Published if `publish_rtcm` parameter is set to `true`.
+   - `/rtcm` (rtcm_msgs/Message): Published if `publish_rtcm` parameter is set to `true`.
 - **Subscribed Topics**:
     - `/fix` (sensor_msgs/NavSatFix): Subscribed if `use_nav_sat_fix_init` parameter is set to `true`.
     - `/gpgga` (nmea_msgs/): Subscribed gpgga messages if  `use_gpgga_for_ntrip` parameter is set to `true`.
