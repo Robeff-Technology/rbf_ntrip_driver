@@ -55,3 +55,6 @@ CATKIN_IGNORE
 
 # Compile commands
 compile_commands.json
+
+# Config
+config/rbf_ntrip_driver.param.yaml
