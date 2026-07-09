@@ -11,6 +11,14 @@ def generate_launch_description():
         'rbf_ntrip_driver.param.yaml'
     )
 
+    # rbf_ntrip_driver.param.yaml is gitignored (contains credentials); when it
+    # is absent from the install space, fall back to the deploy config mount.
+    if not os.path.exists(config):
+        config = os.path.join(
+            os.environ.get('ROBIONE_CONFIG_DIR', '/root/config'),
+            'rbf_ntrip_driver.param.yaml'
+        )
+
     container = ComposableNodeContainer(
     name='rbf_ntrip_driver',
     namespace='',
