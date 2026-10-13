@@ -2,8 +2,8 @@
   ros__parameters:
     ntrip:
       host: "ntrip.example.com"
-      user_name: "-----------"
-      password: "---------"
+      user_name: "$(env ROBIONE_NTRIP_USER)"
+      password: "$(env ROBIONE_NTRIP_PASSWORD)"
       mount_point: "VRSRTCM31"
       port: 2101
       use_nav_sat_fix_init: false
